@@ -12,13 +12,22 @@ Requires macOS 12 (Monterey) or later on Apple Silicon (M1 or newer).
 
 ### First launch
 
-Flashr isn't notarized by Apple yet, so on the very first open macOS will warn
-that it's from an unidentified developer. To open it the first time:
+Flashr isn't notarized by Apple yet, so on the very first open macOS will block
+it. To open it the first time:
 
 1. Open the `.dmg` and drag **Flashr** into **Applications**.
-2. In Applications, **right-click Flashr → Open**, then click **Open** in the dialog.
+2. Double-click **Flashr** once (macOS will refuse — that's expected).
+3. Open **System Settings → Privacy & Security**, scroll down, and click
+   **Open Anyway** next to the Flashr message. Confirm with **Open**.
 
 You only need to do this once. After that it opens normally.
+
+If you'd rather do it in one step, run this in Terminal after copying Flashr to
+Applications:
+
+```
+xattr -dr com.apple.quarantine /Applications/Flashr.app
+```
 
 ---
 
