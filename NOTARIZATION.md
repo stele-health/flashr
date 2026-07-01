@@ -9,8 +9,10 @@ helper is a real signable binary, DMG packaging works). What remains is **3 thin
 only you can do** (they need your Apple ID + 2FA). Once they're done, the rest is
 one script.
 
-Publishing account: **Aryan Pershad**, Apple Team ID **27H95G6Z62**
-(from your existing `Apple Development: aryan.pershad@gmail.com (27H95G6Z62)` cert).
+Publishing account: **Aryan Pershad**. Signing and notarization run under your paid
+Apple team **2PKZ2GXQ6A** (the `Developer ID Application: ARYAN PERSHAD (2PKZ2GXQ6A)`
+cert, the same team as your Posthuman builds). Your `Apple Development` cert sits on a
+separate free team (`27H95G6Z62`); that one is dev-only and is not used here.
 
 ---
 
@@ -37,7 +39,7 @@ Verify it landed:
 ```
 security find-identity -v | grep "Developer ID Application"
 ```
-You should see `Developer ID Application: Aryan Pershad (27H95G6Z62)`.
+You should see `Developer ID Application: ARYAN PERSHAD (2PKZ2GXQ6A)`.
 
 <details><summary>Fallback: portal + CSR route (if the Xcode button is greyed out)</summary>
 
@@ -57,7 +59,7 @@ You should see `Developer ID Application: Aryan Pershad (27H95G6Z62)`.
 ```
 xcrun notarytool store-credentials "flashr" \
   --apple-id "aryan.pershad@gmail.com" \
-  --team-id "27H95G6Z62" \
+  --team-id "2PKZ2GXQ6A" \
   --password "THE_APP_SPECIFIC_PASSWORD"
 ```
 
