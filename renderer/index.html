@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Flashr</title>
+<style>
+/* ============================================================
+   FLASHR — instrument-grade monochrome
+   Self-contained mockup. Dark default + night + light themes.
+   ============================================================ */
+
+:root {
+  /* dark (default) */
+  --bg-0: #070708;
+  --bg-1: #0d0d0f;
+  --glow: rgba(255,255,255,0.05);
+  --panel: rgba(255,255,255,0.024);
+  --panel-2: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.09);
+  --border-strong: rgba(255,255,255,0.17);
+  --text: #f5f5f6;
+  --text-dim: rgba(255,255,255,0.46);
+  --text-faint: rgba(255,255,255,0.26);
+  --accent: #fafafa;       /* the only "bright" — pure light */
+  --word: #ffffff;
+  --pivot: #ffd60a;
+  --reticle: rgba(255,255,255,0.55);
+  --halo: rgba(255,255,255,0.06);
+  --btn-top: rgba(255,255,255,0.10);
+  --btn-bot: rgba(255,255,255,0.015);
+  --btn-hi: rgba(255,255,255,0.14);
+  --shadow-1: 0 1px 2px rgba(0,0,0,.6);
+  --shadow-2: 0 10px 30px rgba(0,0,0,.55);
+  --track: rgba(255,255,255,0.10);
+  --spring: cubic-bezier(.34,1.56,.64,1);
+}
+[data-theme="night"] {
+  --bg-0: #0a0604;
+  --bg-1: #140c06;
+  --glow: rgba(255,176,112,0.06);
+  --panel: rgba(255,170,110,0.03);
+  --panel-2: rgba(255,170,110,0.05);
+  --border: rgba(255,170,110,0.12);
+  --border-strong: rgba(255,180,120,0.22);
+  --text: #f4d9bf;
+  --text-dim: rgba(244,200,160,0.5);
+  --text-faint: rgba(244,200,160,0.3);
+  --accent: #ffcaa0;
+  --word: #ffd9b3;
+  --reticle: rgba(255,200,150,0.55);
+  --halo: rgba(255,170,110,0.08);
+  --btn-top: rgba(255,190,130,0.12);
+  --btn-bot: rgba(255,170,110,0.02);
+  --btn-hi: rgba(255,200,150,0.16);
+  --track: rgba(255,180,120,0.14);
+}
+[data-theme="light"] {
+  --bg-0: #e9e9ea;
+  --bg-1: #fbfbfc;
+  --glow: rgba(0,0,0,0.04);
+  --panel: rgba(255,255,255,0.7);
+  --panel-2: rgba(255,255,255,0.95);
+  --border: rgba(0,0,0,0.10);
+  --border-strong: rgba(0,0,0,0.22);
+  --text: #0c0c0d;
+  --text-dim: rgba(0,0,0,0.5);
+  --text-faint: rgba(0,0,0,0.32);
+  --accent: #0a0a0a;
+  --word: #050505;
+  --reticle: rgba(0,0,0,0.5);
+  --halo: rgba(0,0,0,0.05);
+  --btn-top: rgba(255,255,255,0.9);
+  --btn-bot: rgba(0,0,0,0.03);
+  --btn-hi: rgba(255,255,255,1);
+  --shadow-1: 0 1px 2px rgba(0,0,0,.12);
+  --shadow-2: 0 10px 30px rgba(0,0,0,.14);
+  --track: rgba(0,0,0,0.10);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: var(--bg-0);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+  transition: background .5s ease, color .5s ease;
+}
+.mono { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace; }
+
+/* ---- atmosphere ---- */
+.atmos { position: fixed; inset: 0; z-index: 0; pointer-events: none; transition: background .5s ease; }
+.atmos.a1 { background:
+  radial-gradient(120% 80% at 50% -10%, var(--glow), transparent 55%),
+  radial-gradient(90% 60% at 50% 115%, var(--glow), transparent 60%),
+  linear-gradient(180deg, var(--bg-1), var(--bg-0) 60%);
+}
+.grain { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .5; mix-blend-mode: overlay; }
+[data-theme="light"] .grain { opacity: .25; }
+
+/* faint dotted instrument grid */
+.grid { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 32px 32px; opacity: .35;
+  -webkit-mask-image: radial-gradient(75% 65% at 50% 45%, #000, transparent 75%);
+          mask-image: radial-gradient(75% 65% at 50% 45%, #000, transparent 75%);
+}
+
+/* ---- shell ---- */
+.app { position: relative; z-index: 2; height: 100%;
+  display: flex; flex-direction: column; align-items: center; }
+
+.topbar { width: 100%; max-width: 760px; padding: 22px 26px 0;
+  display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand .mark { font-size: 19px; font-weight: 700; letter-spacing: -.6px; color: var(--text); }
+.brand .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); margin: 0 1px 1px; box-shadow: 0 0 10px var(--accent); }
+.brand .tag { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-faint); font-weight: 600; }
+
+/* segmented theme switch */
+.seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 11px;
+  background: var(--panel); border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 var(--btn-hi), var(--shadow-1); }
+.seg button { font-family: inherit; cursor: pointer; border: 0; background: transparent;
+  color: var(--text-dim); font-size: 11px; letter-spacing: .3px; padding: 6px 11px; border-radius: 8px;
+  transition: color .2s ease, background .25s var(--spring); }
+.seg button.on { color: var(--text); background: var(--panel-2);
+  box-shadow: inset 0 1px 0 var(--btn-hi), 0 1px 3px rgba(0,0,0,.4); }
+
+/* ---- centered stage ---- */
+.center { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
+@media (min-height: 680px) { .center { align-items: flex-start; padding-top: 32px; } }
+
+.panel { width: min(640px, 94vw);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 22px;
+  backdrop-filter: blur(22px) saturate(120%); -webkit-backdrop-filter: blur(22px) saturate(120%);
+  box-shadow: inset 0 1px 0 var(--btn-hi), 0 30px 80px rgba(0,0,0,.5), 0 2px 10px rgba(0,0,0,.4);
+  padding: 26px; }
+
+/* load-in */
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes pop  { from { opacity: 0; transform: scale(.975) translateY(10px); } to { opacity: 1; transform: none; } }
+.panel { animation: pop .6s var(--spring) both; }
+.stagger > * { animation: rise .55s var(--spring) both; }
+.stagger > *:nth-child(1){ animation-delay: .06s; }
+.stagger > *:nth-child(2){ animation-delay: .12s; }
+.stagger > *:nth-child(3){ animation-delay: .18s; }
+.stagger > *:nth-child(4){ animation-delay: .24s; }
+.stagger > *:nth-child(5){ animation-delay: .30s; }
+
+/* ---- HOME ---- */
+.eyebrow { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-faint); font-weight: 600; }
+.lede { font-size: 21px; font-weight: 600; letter-spacing: -.5px; margin: 9px 0 18px; line-height: 1.25; color: var(--text); }
+.lede em { font-style: normal; color: var(--text-dim); }
+
+.field { position: relative; }
+.field textarea {
+  width: 100%; height: 132px; resize: none; color: var(--text);
+  background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.05));
+  border: 1px solid var(--border); border-radius: 14px; padding: 14px 15px;
+  font-family: inherit; font-size: 14.5px; line-height: 1.55;
+  box-shadow: inset 0 1px 0 rgba(0,0,0,.25), inset 0 0 0 0 var(--accent);
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+[data-theme="light"] .field textarea { background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.01)); }
+.field textarea::placeholder { color: var(--text-faint); }
+.field textarea:focus { outline: 0; border-color: var(--border-strong);
+  box-shadow: inset 0 1px 0 rgba(0,0,0,.25), 0 0 0 3px var(--glow); }
+.field .count { position: absolute; right: 12px; bottom: 10px; font-size: 11px; color: var(--text-faint); }
+
+.controls-row { display: flex; gap: 14px; margin: 16px 0 4px; align-items: stretch; }
+.ctl { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 13px; padding: 12px 13px;
+  box-shadow: inset 0 1px 0 var(--btn-hi); }
+.ctl .lab { display: flex; justify-content: space-between; align-items: baseline; }
+.ctl .lab span { font-size: 11px; color: var(--text-dim); letter-spacing: .3px; }
+.ctl .lab b { font-size: 13px; color: var(--text); font-weight: 600; }
+.ctl .lab b u { text-decoration: none; color: var(--text-faint); font-weight: 500; font-size: 10.5px; margin-left: 2px; }
+
+/* range */
+input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height: 22px; background: transparent; margin-top: 6px; cursor: pointer; }
+input[type=range]::-webkit-slider-runnable-track{ height: 4px; border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent) var(--p,40%), var(--track) var(--p,40%)); }
+input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width: 16px; height: 16px; margin-top: -6px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #cfcfd2);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.3), 0 2px 6px rgba(0,0,0,.5), 0 0 14px var(--glow);
+  transition: transform .15s var(--spring); }
+input[type=range]:active::-webkit-slider-thumb{ transform: scale(1.18); }
+
+/* segmented words-per-flash */
+.chunks { display: inline-flex; gap: 3px; margin-top: 8px; padding: 3px; border-radius: 10px;
+  background: rgba(0,0,0,.18); border: 1px solid var(--border); }
+[data-theme="light"] .chunks { background: rgba(0,0,0,.04); }
+.chunks button { font-family: inherit; cursor: pointer; border: 0; background: transparent; color: var(--text-dim);
+  width: 30px; height: 26px; border-radius: 7px; font-size: 12.5px; font-weight: 600;
+  transition: all .22s var(--spring); }
+.chunks button.on { color: var(--accent); background: var(--panel-2); box-shadow: inset 0 1px 0 var(--btn-hi), 0 1px 3px rgba(0,0,0,.4); }
+
+.toggles { display: flex; gap: 10px; margin: 14px 0 20px; }
+.toggle { flex: 1; display: flex; align-items: center; gap: 9px; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 11px 12px;
+  box-shadow: inset 0 1px 0 var(--btn-hi); transition: border-color .2s ease, transform .15s var(--spring); }
+.toggle:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.toggle .sw { width: 34px; height: 20px; border-radius: 20px; background: var(--track); position: relative; flex: none;
+  transition: background .25s ease; box-shadow: inset 0 1px 2px rgba(0,0,0,.4); }
+.toggle .sw::after { content:""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #cbcbce); box-shadow: 0 1px 3px rgba(0,0,0,.5);
+  transition: transform .28s var(--spring); }
+.toggle.on .sw { background: var(--accent); }
+.toggle.on .sw::after { transform: translateX(14px); }
+.toggle .t { font-size: 11.5px; color: var(--text-dim); line-height: 1.3; }
+.toggle.on .t { color: var(--text); }
+
+/* ---- buttons (the 3D tactile part) ---- */
+.actions { display: flex; gap: 12px; }
+.btn { position: relative; flex: 1; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600;
+  border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; color: var(--text);
+  background: linear-gradient(180deg, var(--btn-top), var(--btn-bot));
+  box-shadow: inset 0 1px 0 var(--btn-hi), var(--shadow-1), var(--shadow-2);
+  transition: transform .16s var(--spring), box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
+.btn:hover { transform: translateY(-2px); border-color: var(--border-strong);
+  box-shadow: inset 0 1px 0 var(--btn-hi), 0 2px 4px rgba(0,0,0,.5), 0 16px 40px rgba(0,0,0,.55); }
+.btn:active { transform: translateY(1px) scale(.995);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.5); }
+.btn svg { width: 17px; height: 17px; }
+.btn.primary { color: #0a0a0a; border-color: transparent;
+  background: linear-gradient(180deg, #ffffff, #d7d7db);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 2px 8px rgba(0,0,0,.45), 0 12px 34px rgba(0,0,0,.5); }
+.btn.primary:hover { transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 0 0 3px var(--glow), 0 18px 44px rgba(0,0,0,.6); }
+[data-theme="light"] .btn.primary { background: linear-gradient(180deg,#1a1a1c,#050505); color: #fff; }
+.btn .flex-grow { flex: 0; }
+.btn.ghost { flex: 0 0 auto; padding: 14px; }
+
+/* ---- READER ---- */
+#reader { width: min(720px, 94vw); display: flex; flex-direction: column; align-items: center; }
+.srcline { font-size: 11.5px; color: var(--text-faint); letter-spacing: .3px; margin-bottom: 18px; height: 16px; }
+.stage { position: relative; width: 100%; height: 190px; display: grid; place-items: center; }
+.halo { position: absolute; width: 360px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, var(--halo), transparent 70%); filter: blur(8px); pointer-events: none; }
+.reticle { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  width: 1.5px; pointer-events: none; }
+.tick { position: absolute; left: 50%; transform: translateX(-50%); width: 1.5px; height: 13px; background: var(--reticle); border-radius: 2px; }
+.tick.top { top: -64px; } .tick.bot { bottom: -64px; box-shadow: 0 0 8px var(--reticle); }
+.tick.top { box-shadow: 0 0 8px var(--reticle); }
+.word { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;
+  width: min(560px, 90%); font-weight: 600; letter-spacing: -1px;
+  font-size: clamp(40px, 8vw, 66px); line-height: 1; color: var(--word); will-change: transform, opacity, filter; }
+.word .l { text-align: right; color: var(--word); opacity: .92; }
+.word .p { color: var(--pivot); position: relative; font-weight: 700; }
+.word .p::after { content:""; position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
+  width: 5px; height: 5px; border-radius: 50%; background: var(--pivot); opacity: .85; box-shadow: 0 0 10px var(--pivot); }
+.word .r { text-align: left; color: var(--word); opacity: .92; }
+@keyframes flashin { from { opacity: 0; transform: translateY(3px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+.word.anim { animation: flashin .085s ease-out; }
+
+/* progress */
+.bar { width: 100%; height: 4px; border-radius: 4px; background: var(--track); overflow: visible; position: relative; margin-top: 30px; cursor: pointer; }
+.fill { height: 100%; width: 0%; border-radius: 4px; background: var(--accent); position: relative;
+  box-shadow: 0 0 12px var(--glow); transition: width .12s linear; }
+.fill::after { content:""; position: absolute; right: -1px; top: 50%; transform: translateY(-50%);
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.meta { width: 100%; display: flex; justify-content: space-between; margin-top: 12px;
+  font-size: 11.5px; color: var(--text-faint); letter-spacing: .4px; }
+
+/* transport */
+.transport { display: flex; align-items: center; gap: 8px; margin-top: 26px; }
+.ic { cursor: pointer; border: 1px solid var(--border); border-radius: 12px; width: 46px; height: 46px;
+  display: grid; place-items: center; color: var(--text); background: linear-gradient(180deg, var(--btn-top), var(--btn-bot));
+  box-shadow: inset 0 1px 0 var(--btn-hi), var(--shadow-1);
+  transition: transform .16s var(--spring), box-shadow .2s ease, border-color .2s ease, color .2s ease; }
+.ic:hover { transform: translateY(-2px); border-color: var(--border-strong); color: var(--accent);
+  box-shadow: inset 0 1px 0 var(--btn-hi), 0 12px 28px rgba(0,0,0,.5); }
+.ic:active { transform: translateY(1px); box-shadow: inset 0 2px 6px rgba(0,0,0,.5); }
+.ic svg { width: 18px; height: 18px; }
+.ic.play { width: 64px; height: 56px; border-color: transparent; color: #0a0a0a;
+  background: linear-gradient(180deg, #ffffff, #d7d7db);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 2px 8px rgba(0,0,0,.45), 0 12px 30px rgba(0,0,0,.5); }
+.ic.play:hover { color: #0a0a0a; box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 0 0 3px var(--glow), 0 16px 40px rgba(0,0,0,.6); }
+[data-theme="light"] .ic.play { background: linear-gradient(180deg,#1a1a1c,#050505); color:#fff; }
+.ic svg { width: 18px; height: 18px; }
+
+.wpmctl { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; padding: 0 4px; }
+.wpmctl b { min-width: 56px; text-align: center; color: var(--text); font-size: 13px; font-weight: 600; }
+.wpmctl small { color: var(--text-faint); font-size: 10px; letter-spacing: 1px; }
+.step { cursor: pointer; width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--border); color: var(--text-dim);
+  background: var(--panel); display: grid; place-items: center; font-size: 16px; line-height: 1;
+  box-shadow: inset 0 1px 0 var(--btn-hi); transition: all .16s var(--spring); }
+.step:hover { color: var(--accent); border-color: var(--border-strong); transform: translateY(-1px); }
+.step:active { transform: translateY(1px); }
+
+.hint { margin-top: 26px; font-size: 11px; color: var(--text-faint); letter-spacing: .3px; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.hint kbd { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--text-dim);
+  border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; background: var(--panel); }
+
+.back { position: absolute; left: 26px; top: 22px; }
+.back .btn { padding: 9px 13px; font-size: 12.5px; }
+
+.hidden { display: none !important; }
+
+/* float hint chip */
+.floatchip { position: fixed; right: 22px; bottom: 20px; z-index: 5; display: flex; align-items: center; gap: 9px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 9px 13px;
+  box-shadow: inset 0 1px 0 var(--btn-hi), var(--shadow-2); backdrop-filter: blur(16px);
+  font-size: 11px; color: var(--text-dim); animation: rise .6s var(--spring) both; animation-delay: .5s; }
+.floatchip .k { font-family: ui-monospace, Menlo, monospace; color: var(--text); border: 1px solid var(--border);
+  border-radius: 5px; padding: 1px 6px; font-size: 10px; }
+</style>
+  <link rel="stylesheet" href="mac.css" />
+</head>
+<body data-theme="dark">
+
+<div class="atmos a1"></div>
+<div class="grid"></div>
+<svg class="grain"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <span class="mark">flashr<span class="dot"></span></span>
+      <span class="tag">stele</span>
+    </div>
+    <div class="topright">
+      <div class="seg" id="theme">
+        <button data-t="dark" class="on">Dark</button>
+        <button data-t="night">Night</button>
+        <button data-t="light">Light</button>
+      </div>
+      <button class="iconbtn" id="library" title="Library" aria-label="Library">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/></svg>
+      </button>
+      <button class="iconbtn" id="gear" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="center">
+
+    <!-- HOME / LAUNCHER -->
+    <div class="panel stagger" id="home">
+      <div class="eyebrow">Speed reader</div>
+      <div class="lede">Flash anything, one word at a time. <em>Paste it, drop it, or grab your clipboard.</em></div>
+
+      <div class="field">
+        <textarea id="ta" placeholder="Paste or type text here, then hit Flash…">Reading is a bottleneck. Your eyes jump across a line, snap back, lose the thread, and drift. Flashr removes the movement entirely: it holds one word in place and feeds you the next, so the only thing your mind does is comprehend. At four hundred words a minute it feels fast. At six hundred it feels like a superpower.</textarea>
+        <span class="count mono" id="count">0 words</span>
+      </div>
+
+      <div class="controls-row">
+        <div class="ctl">
+          <div class="lab"><span>Speed</span><b class="mono"><span id="wpmLab">400</span><u>wpm</u></b></div>
+          <input id="wpm" type="range" min="100" max="1000" step="25" value="400" />
+        </div>
+        <div class="ctl" style="flex:0 0 auto;">
+          <div class="lab"><span>Per flash</span></div>
+          <div class="chunks" id="chunks">
+            <button data-c="1" class="on">1</button>
+            <button data-c="2">2</button>
+            <button data-c="3">3</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toggles">
+        <div class="toggle on" data-opt="punct"><div class="sw"></div><div class="t">Pause on punctuation</div></div>
+        <div class="toggle on" data-opt="longw"><div class="sw"></div><div class="t">Slow on long words &amp; numbers</div></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="flash">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+          Flash it
+        </button>
+        <button class="btn" id="openfile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Open file
+        </button>
+        <button class="btn ghost" id="clip" title="Flash clipboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M8 6H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel stagger hidden" id="settings">
+      <div class="eyebrow">Settings</div>
+      <div class="lede">Global shortcuts. <em>Click a shortcut, then press the keys you want.</em></div>
+
+      <div class="setrow">
+        <div class="setlab">
+          <b>Reader background</b>
+          <span>The background color of the flash reader and launcher.</span>
+        </div>
+        <label class="color-wheel-btn" title="Pick background color"><input type="color" id="bg-color-input" value="#070708"></label>
+      </div>
+
+      <div class="setrow">
+        <div class="setlab">
+          <b>Pivot letter color</b>
+          <span>The highlighted letter at the center of each word — the anchor your eye locks to.</span>
+        </div>
+        <label class="color-wheel-btn" title="Pick pivot letter color"><input type="color" id="pivot-color-input" value="#ffd60a"></label>
+      </div>
+
+      <div class="setrow">
+        <div class="setlab">
+          <b>Flash highlighted selection</b>
+          <span>Grabs whatever you've highlighted in any app and floats it over everything.</span>
+        </div>
+        <button class="hk" data-hk="flashSelection"><span class="combo" id="hk-flashSelection">…</span></button>
+      </div>
+
+      <div class="setrow">
+        <div class="setlab">
+          <b>Flash clipboard</b>
+          <span>Flashes whatever you've copied, in the floating reader.</span>
+        </div>
+        <button class="hk" data-hk="flashClipboard"><span class="combo" id="hk-flashClipboard">…</span></button>
+      </div>
+
+      <div class="setrow">
+        <div class="setlab">
+          <b>Read a screen region</b>
+          <span>Drag a box over anything on screen (a webpage, a PDF, an image) and Flashr reads the text inside it.</span>
+        </div>
+        <button class="hk" data-hk="flashRegion"><span class="combo" id="hk-flashRegion">…</span></button>
+      </div>
+
+      <div class="sethint" id="sethint">Tip: use at least one modifier (⌘ ⌥ ⌃ ⇧). Press Esc while recording to cancel.</div>
+
+      <div class="actions" style="margin-top:20px;">
+        <button class="btn" id="resetHk">Reset to defaults</button>
+        <button class="btn primary" id="settingsDone">Done</button>
+      </div>
+    </div>
+
+    <!-- LIBRARY / WORKSPACE -->
+    <div class="panel stagger hidden" id="workspace">
+      <div class="ws-header">
+        <div>
+          <div class="eyebrow" style="margin-bottom:4px;">Library</div>
+          <div class="ws-header-sub">Your reading vault. <em>Organize files into projects.</em></div>
+        </div>
+        <button class="btn ws-import-btn" id="ws-import">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Import
+        </button>
+      </div>
+
+      <div class="ws-body">
+        <aside class="ws-sidebar" id="ws-sidebar"></aside>
+        <div class="ws-main">
+          <div class="ws-pane-head">
+            <span class="ws-pane-title" id="ws-pane-title">All files</span>
+            <span class="ws-pane-actions" id="ws-pane-actions"></span>
+          </div>
+
+          <div id="ws-list-wrap">
+            <div class="ws-empty" id="ws-empty">No files yet. Hit Import to add files to your library.</div>
+            <div class="ws-list hidden" id="ws-list"></div>
+          </div>
+
+          <div class="ws-watched hidden" id="ws-watched">
+            <div class="ws-connect-row">
+              <div class="ws-folder-path empty" id="ws-path">No folder connected</div>
+              <button class="btn" id="ws-connect" style="flex:0 0 auto; font-size:12px; padding:9px 14px;">Choose folder</button>
+            </div>
+            <div class="ws-list hidden" id="ws-ext-list"></div>
+            <div class="ws-empty hidden" id="ws-ext-empty">No readable files in this folder.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top:20px;">
+        <button class="btn primary" id="workspaceDone">Done</button>
+      </div>
+    </div>
+
+    <!-- READER -->
+    <div id="reader" class="hidden">
+      <div class="back"><button class="btn" id="back">← New</button></div>
+      <div class="srcline" id="src">pasted text</div>
+      <div class="stage">
+        <div class="halo"></div>
+        <div class="reticle"><span class="tick top"></span><span class="tick bot"></span></div>
+        <div class="word" id="word"><span class="l"></span><span class="p"></span><span class="r"></span></div>
+      </div>
+      <div class="bar" id="bar"><div class="fill" id="fill"></div></div>
+      <div class="meta"><span class="mono" id="pos">0 / 0</span><span class="mono" id="pct">0%</span></div>
+
+      <div class="transport">
+        <div class="ic" data-act="prevSentence" title="Prev sentence">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5v14H4V5zM20 5v14l-9-7zM11 5v14l-9-7z" opacity=".0"/><path d="M7 6v12H5V6zm13 0v12l-9-6z"/></svg>
+        </div>
+        <div class="ic" data-act="prev" title="Back">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 6v12l-9-6z"/></svg>
+        </div>
+        <div class="ic play" data-act="toggle" id="playbtn" title="Play / Pause">
+          <svg id="playicon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <div class="ic" data-act="next" title="Forward">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 6v12l9-6z"/></svg>
+        </div>
+        <div class="ic" data-act="nextSentence" title="Next sentence">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 6v12h2V6zm-13 0v12l9-6z"/></svg>
+        </div>
+        <div class="wpmctl">
+          <div class="step" data-act="wpmDown">−</div>
+          <b class="mono"><span id="rwpm">400</span> <small>WPM</small></b>
+          <div class="step" data-act="wpmUp">+</div>
+        </div>
+      </div>
+
+      <div class="hint">
+        <span><kbd>space</kbd> play</span>
+        <span><kbd>←</kbd><kbd>→</kbd> step</span>
+        <span><kbd>↑</kbd><kbd>↓</kbd> speed</span>
+        <span><kbd>⇧</kbd> + arrows · sentence</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="floatchip"><span>Global hotkey</span><span class="k">⌘ ⇧ R</span><span>flashes your selection over any app</span></div>
+
+<script>
+/* ---- engine (faithful port of reader-core.js) ---- */
+function sanitize(text){
+  if(!text) return '';
+  let t=String(text).replace(/\r\n?/g,'\n');
+  t=t.replace(/```[^\n]*/g,'');                          // code fences
+  t=t.replace(/!\[([^\]]*)\]\([^)]*\)/g,'$1');           // images -> alt
+  t=t.replace(/\[([^\]]+)\]\([^)]*\)/g,'$1');            // links -> text
+  t=t.replace(/^\s{0,3}#{1,6}\s+/gm,'');                 // headings
+  t=t.replace(/^\s{0,3}>\s?/gm,'');                      // blockquotes
+  t=t.replace(/^\s{0,3}[-*+]\s+\[[ xX]\]\s+/gm,'');      // task list
+  t=t.replace(/^\s{0,3}[-*+]\s+/gm,'');                  // bullet list
+  t=t.replace(/^\s{0,3}\d+[.)]\s+/gm,'');                // numbered list
+  t=t.replace(/^\s{0,3}([-*_])(?:\s*\1){2,}\s*$/gm,'');  // horizontal rules
+  t=t.replace(/^\s*\|?[\s:|-]+\|?\s*$/gm,'');            // table separators
+  t=t.replace(/\|/g,' ');                                // stray pipes
+  t=t.replace(/(\*\*|__)(.+?)\1/g,'$2');                 // bold
+  t=t.replace(/\*(\S.*?\S|\S)\*/g,'$1');                 // italic *...*
+  t=t.replace(/(^|\s)_(\S.*?\S|\S)_(?=\s|$)/g,'$1$2');   // italic _..._
+  t=t.replace(/~~(.+?)~~/g,'$2');                        // strikethrough
+  t=t.replace(/`([^`]+)`/g,'$1');                        // inline code
+  t=t.replace(/[*`]+/g,'');                              // leftover markers
+  t=t.replace(/\\([\\`*_{}\[\]()#+\-.!>~|])/g,'$1');     // escapes
+  const ents={'&nbsp;':' ','&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'",'&apos;':"'",'&hellip;':'…','&mdash;':'—','&ndash;':'–','&rsquo;':'’','&lsquo;':'‘','&ldquo;':'“','&rdquo;':'”'};
+  t=t.replace(/&[a-zA-Z]+;|&#\d+;/g,m=>ents[m]!==undefined?ents[m]:' ');
+  t=t.replace(/[•·●▪◦‣⁃→]/g,' ');                        // bullets / arrows
+  t=t.replace(/[​-‍﻿­]/g,'');                  // zero-width + soft hyphen
+  return t;
+}
+function tokenize(text){
+  if(!text) return [];
+  const raw = sanitize(text).replace(/\s+/g,' ').trim().split(' ');
+  const out=[];
+  for(const w of raw){ if(!w) continue;
+    if(w.length<=13) out.push(w);
+    else for(let i=0;i<w.length;i+=12) out.push(w.slice(i,i+12));
+  }
+  return out;
+}
+function orpIndex(word){const n=word.length; if(n<=1)return 0; if(n<=5)return 1; if(n<=9)return 2; if(n<=13)return 3; return 4;}
+function renderParts(words){const t=words.join(' '); const p=orpIndex(t); return {raw:t,left:t.slice(0,p),pivot:t.slice(p,p+1),right:t.slice(p+1)};}
+function dwell(words,o){const t=words.join(' '); let m=words.length;
+  if(o.punct){ if(/[.!?…]["')\]]?$/.test(t)) m*=2.0; else if(/[,;:)\]"']$/.test(t)) m*=1.5; else if(/[—–-]$/.test(t)) m*=1.4; }
+  if(o.longw){ const L=Math.max(...words.map(w=>w.length)); if(L>=9)m*=1.25; if(/\d/.test(t))m*=1.15; }
+  return m;}
+const clamp=(n,a,b)=>{n=+n; return isNaN(n)?a:Math.min(b,Math.max(a,n));};
+
+const S = { words:[], i:0, playing:false, timer:null, wpm:400, chunk:1, punct:true, longw:true };
+
+const $=s=>document.querySelector(s);
+const wordEl=$('#word'), L=$('.l',wordEl)||wordEl.querySelector('.l'), P=wordEl.querySelector('.p'), R=wordEl.querySelector('.r');
+const fill=$('#fill'), pos=$('#pos'), pct=$('#pct'), playicon=$('#playicon');
+
+function show(i){
+  if(!S.words.length){return;}
+  const chunk=S.words.slice(i,i+S.chunk); const p=renderParts(chunk);
+  L.textContent=p.left; P.textContent=p.pivot; R.textContent=p.right;
+  wordEl.classList.remove('anim'); void wordEl.offsetWidth; wordEl.classList.add('anim');
+  const f=S.words.length? i/S.words.length:0;
+  fill.style.width=(f*100).toFixed(1)+'%';
+  pos.textContent=(Math.min(i+1,S.words.length))+' / '+S.words.length;
+  pct.textContent=Math.round(f*100)+'%';
+}
+function tick(){
+  if(!S.playing) return;
+  if(S.i>=S.words.length){ S.playing=false; setPlay(); show(S.words.length-1); return; }
+  const chunk=S.words.slice(S.i,S.i+S.chunk); show(S.i);
+  const base=60000/S.wpm; const d=base*dwell(chunk,S);
+  S.i+=S.chunk; S.timer=setTimeout(tick,d);
+}
+function play(){ if(S.playing||!S.words.length)return; if(S.i>=S.words.length)S.i=0; S.playing=true; setPlay(); tick(); }
+function pause(){ S.playing=false; if(S.timer){clearTimeout(S.timer);S.timer=null;} setPlay(); }
+function toggle(){ S.playing?pause():play(); }
+function setPlay(){ playicon.innerHTML = S.playing ? '<path d="M7 5h3v14H7zM14 5h3v14h-3z"/>' : '<path d="M8 5v14l11-7z"/>'; }
+function step(d){ pause(); S.i=clamp(S.i+d*S.chunk,0,Math.max(0,S.words.length-1)); show(S.i); }
+function jumpSentence(dir){ pause(); const isEnd=i=>i>=0&&i<S.words.length&&/[.!?…]["')\]]?$/.test(S.words[i]); let i=S.i;
+  if(dir<0){ i=Math.max(0,i-1); while(i>0&&!isEnd(i-1))i--; } else { while(i<S.words.length-1&&!isEnd(i))i++; i=Math.min(S.words.length-1,i+1);} S.i=i; show(S.i); }
+function setWpm(n){ S.wpm=clamp(Math.round(n),60,1500); $('#rwpm').textContent=S.wpm; $('#wpmLab').textContent=S.wpm; $('#wpm').value=S.wpm; setRangeFill(); }
+
+/* ---- home wiring ---- */
+const ta=$('#ta');
+function countWords(){ const n=tokenize(ta.value).length; $('#count').textContent=n+' word'+(n===1?'':'s'); }
+ta.addEventListener('input',countWords); countWords();
+
+function setRangeFill(){ const r=$('#wpm'); const p=((r.value-r.min)/(r.max-r.min))*100; r.style.setProperty('--p',p+'%'); }
+$('#wpm').addEventListener('input',e=>{ setWpm(e.target.value); }); setWpm(400);
+
+$('#chunks').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); S.chunk=+b.dataset.c; });
+
+document.querySelectorAll('.toggle').forEach(t=>t.addEventListener('click',()=>{
+  t.classList.toggle('on'); S[t.dataset.opt]=t.classList.contains('on');
+}));
+
+/* theme */
+$('#theme').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+  document.body.dataset.theme=b.dataset.t; });
+
+/* start reading */
+function start(text,label){ const words=tokenize(text); if(!words.length)return;
+  S.words=words; S.i=0; $('#src').textContent=label||'pasted text';
+  ['home','settings','workspace'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.add('hidden');});
+  $('#reader').classList.remove('hidden');
+  document.body.classList.add('reading');
+  show(0); setTimeout(play,260);
+}
+$('#flash').addEventListener('click',()=>start(ta.value,'pasted text'));
+$('#openfile').addEventListener('click',()=>start(ta.value,'demo.txt'));
+$('#clip').addEventListener('click',async()=>{ try{ const t=await navigator.clipboard.readText(); start(t||ta.value,'clipboard'); }catch(_){ start(ta.value,'clipboard'); } });
+$('#back').addEventListener('click',()=>{ pause(); document.body.classList.remove('reading'); $('#reader').classList.add('hidden'); if(window._flashrFromLibrary){ window._flashrFromLibrary=false; document.getElementById('workspace').classList.remove('hidden'); } else { $('#home').classList.remove('hidden'); } });
+
+/* transport */
+document.querySelector('.transport').addEventListener('click',e=>{ const el=e.target.closest('[data-act]'); if(!el)return;
+  const a=el.dataset.act;
+  if(a==='toggle')toggle(); else if(a==='prev')step(-1); else if(a==='next')step(1);
+  else if(a==='prevSentence')jumpSentence(-1); else if(a==='nextSentence')jumpSentence(1);
+  else if(a==='wpmUp')setWpm(S.wpm+25); else if(a==='wpmDown')setWpm(S.wpm-25); });
+$('#bar').addEventListener('click',e=>{ const r=e.currentTarget.getBoundingClientRect(); const f=(e.clientX-r.left)/r.width;
+  pause(); S.i=clamp(Math.round(f*S.words.length),0,S.words.length-1); show(S.i); });
+
+/* keyboard */
+addEventListener('keydown',e=>{ if($('#reader').classList.contains('hidden')) return;
+  if(e.key===' '){e.preventDefault();toggle();}
+  else if(e.key==='ArrowLeft'){e.preventDefault(); e.shiftKey?jumpSentence(-1):step(-1);}
+  else if(e.key==='ArrowRight'){e.preventDefault(); e.shiftKey?jumpSentence(1):step(1);}
+  else if(e.key==='ArrowUp'){e.preventDefault(); setWpm(S.wpm+25);}
+  else if(e.key==='ArrowDown'){e.preventDefault(); setWpm(S.wpm-25);}
+});
+</script>
+  <script src="bridge.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; cursor: crosshair;
+    -webkit-user-select: none; user-select: none;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: rgba(0,0,0,0.22); }
+  #hint { position: fixed; left: 50%; top: 26px; transform: translateX(-50%);
+    color: #fff; font-size: 13px; letter-spacing: .3px;
+    background: rgba(0,0,0,0.66); padding: 9px 15px; border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+  #cancel { position: fixed; left: 50%; bottom: 36px; transform: translateX(-50%);
+    cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; color: #000;
+    background: #fff; border: 0; border-radius: 999px; padding: 10px 22px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+  #box { position: fixed; display: none; border: 1.5px solid #fff;
+    background: rgba(255,255,255,0.10); border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.55), 0 0 0 100vmax rgba(0,0,0,0.30); }
+</style>
+</head>
+<body>
+  <div id="hint">Drag a box over the text. Press Esc to cancel (always works).</div>
+  <div id="box"></div>
+  <button id="cancel">Cancel</button>
+  <script>
+    const box = document.getElementById('box');
+    let sx = 0, sy = 0, drag = false;
+    function cancel() { try { window.flashr.selectorCancel(); } catch (_) {} }
+    function done(r) { try { window.flashr.selectorDone(r); } catch (_) { cancel(); } }
+
+    document.getElementById('cancel').addEventListener('mousedown', (e) => {
+      e.stopPropagation(); e.preventDefault(); cancel();
+    });
+    addEventListener('mousedown', (e) => {
+      drag = true; sx = e.clientX; sy = e.clientY;
+      box.style.display = 'block';
+      box.style.left = sx + 'px'; box.style.top = sy + 'px';
+      box.style.width = '0px'; box.style.height = '0px';
+      e.preventDefault();
+    });
+    addEventListener('mousemove', (e) => {
+      if (!drag) return;
+      const x = Math.min(sx, e.clientX), y = Math.min(sy, e.clientY);
+      box.style.left = x + 'px'; box.style.top = y + 'px';
+      box.style.width = Math.abs(e.clientX - sx) + 'px';
+      box.style.height = Math.abs(e.clientY - sy) + 'px';
+    });
+    addEventListener('mouseup', (e) => {
+      if (!drag) return; drag = false;
+      const x = Math.min(sx, e.clientX), y = Math.min(sy, e.clientY);
+      const w = Math.abs(e.clientX - sx), h = Math.abs(e.clientY - sy);
+      if (w < 8 || h < 8) { cancel(); return; }
+      done({ x, y, w, h });
+    });
+    addEventListener('keydown', (e) => { if (e.key === 'Escape') cancel(); });
+  </script>
+</body>
+</html>
