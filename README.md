@@ -6,7 +6,7 @@ window over any app.
 
 ## Download
 
-**[⬇︎ Download Flashr (macOS, Apple Silicon)](https://github.com/aertix/flashr/releases/latest/download/Flashr.dmg)**
+**[⬇︎ Download Flashr (macOS, Apple Silicon)](https://github.com/stele-health/flashr/releases/latest/download/Flashr.dmg)**
 
 Requires macOS 12 (Monterey) or later on Apple Silicon (M1 or newer).
 

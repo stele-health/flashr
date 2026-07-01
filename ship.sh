@@ -15,7 +15,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 cd "$HERE"
 APP="$HERE/dist/Flashr-darwin-arm64/Flashr.app"
 DMG="$HERE/dist/Flashr.dmg"
-REPO="aertix/flashr"
+REPO="stele-health/flashr"
 REL="v0.1.0"            # the "Latest" release the landing page downloads from
 
 echo "==> 1/5  Build"

@@ -62,7 +62,7 @@ Once Steps 1–3 are done, the rest is one script:
 ```
 cd ~/flashr-mac
 ./sign-notarize.sh          # signs, builds dmg, notarizes, staples, verifies
-gh release create v0.1.1 --repo aertix/flashr dist/Flashr.dmg \
+gh release create v0.1.1 --repo stele-health/flashr dist/Flashr.dmg \
   --title "Flashr 0.1.1" --notes "Notarized build."
 ```
 

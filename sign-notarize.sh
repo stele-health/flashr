@@ -11,7 +11,7 @@
 #   3. Signs the .dmg, submits it to Apple's notary service, waits, and staples.
 #   4. Verifies the staple so a downloaded copy opens with no Gatekeeper prompt.
 #
-# Then publish: gh release create vX.Y.Z --repo aertix/flashr dist/Flashr.dmg
+# Then publish: gh release create vX.Y.Z --repo stele-health/flashr dist/Flashr.dmg
 # (same asset name -> the landing page's "latest" URL auto-updates, no page change.)
 #
 set -euo pipefail
@@ -56,4 +56,4 @@ spctl -a -t open --context context:primary-signature -vvv "$DMG" || true
 
 echo ""
 echo "DONE. Notarized image: $DMG"
-echo "Publish with:  gh release create v0.1.1 --repo aertix/flashr \"$DMG\" --title \"Flashr 0.1.1\" --notes \"Notarized build.\""
+echo "Publish with:  gh release create v0.1.1 --repo stele-health/flashr \"$DMG\" --title \"Flashr 0.1.1\" --notes \"Notarized build.\""
