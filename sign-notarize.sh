@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# sign-notarize.sh — sign, notarize, staple, and re-package Flashr for clean
+# sign-notarize.sh - sign, notarize, staple, and re-package Flashr for clean
 # (no-warning) distribution. Run this ONLY after the Developer ID cert and the
 # "flashr" notarytool keychain profile exist (see NOTARIZATION.md).
 #
@@ -32,15 +32,17 @@ fi
 [[ -n "$IDENTITY" ]] || { echo "ERROR: no 'Developer ID Application' identity found. See NOTARIZATION.md."; exit 1; }
 echo "Signing identity: $IDENTITY"
 
-echo "==> 1/4  Code-signing the app (inside-out, hardened runtime)…"
-npx --yes @electron/osx-sign "$APP" \
-  --identity="$IDENTITY" \
-  --entitlements="$ENT" \
-  --entitlements-inherit="$ENT" \
-  --hardened-runtime \
-  --type=distribution \
-  --no-gatekeeper-assess
+echo "==> 1/4  Code-signing the app + OCR helper (hardened runtime, @electron/osx-sign v2)…"
+IDENTITY="$IDENTITY" node "$HERE/sign-app.js" "$IDENTITY" "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
+# The bundled Vision helper is a loose Mach-O; it MUST carry the hardened runtime
+# or Apple's notary service rejects the whole app. Fail loudly if it slipped through.
+if codesign -dvv "$APP/Contents/Resources/app/bin/ocr" 2>&1 | grep -q "runtime"; then
+  echo "   bin/ocr: hardened-runtime signed OK"
+else
+  echo "ERROR: bin/ocr is not hardened-runtime signed; aborting before notarization." >&2
+  exit 1
+fi
 
 echo "==> 2/4  Rebuilding the .dmg from the signed app…"
 ./build-dmg.sh
