@@ -4,11 +4,11 @@
   "version": "0.1.0",
   "description": "Flashr for Mac. RSVP speed reader, summoned from anywhere.",
   "main": "main.js",
-  "author": "Posthuman",
+  "author": "Stele Health",
   "license": "UNLICENSED",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager . Flashr --platform=darwin --arch=arm64 --icon=build/icon.icns --no-asar --out=dist --overwrite --app-bundle-id=health.posthuman.flashr --app-version=0.1.0"
+    "build": "electron-packager . Flashr --platform=darwin --arch=arm64 --icon=build/icon.icns --no-asar --out=dist --overwrite --app-bundle-id=health.stele.flashr --app-version=0.1.0"
   },
   "devDependencies": {
     "@electron/packager": "^20.0.1",

@@ -6,7 +6,7 @@ Paste the block below into a fresh session to pick this work back up.
 
 Resume Flashr work.
 
-Flashr is Posthuman's black-and-white RSVP speed reader. Two surfaces: a Chrome extension (~/flashr-extension) and a native Mac app (~/flashr-mac, Electron) which is the active focus. Mac-first. The iPhone app is specced (~/flashr-extension/docs/specs/2026-06-10-flashr-ios-design.md) but not started.
+Flashr is Stele's black-and-white RSVP speed reader, part of the Stele micro-SaaS suite. Brand rule: only the Stele name appears in the product and repo; the company's pre-rebrand name is retired everywhere. Two surfaces: a Chrome extension (~/flashr-extension) and a native Mac app (~/flashr-mac, Electron) which is the active focus. Mac-first. The iPhone app is specced (~/flashr-extension/docs/specs/2026-06-10-flashr-ios-design.md) but not started.
 
 Mac app (~/flashr-mac): run with `cd ~/flashr-mac && npm start` (dev). Packaged app at ~/flashr-mac/dist/Flashr-darwin-arm64/Flashr.app holds OLD code and needs repackaging. Design is "instrument-grade monochrome" (pure black and white, tactile 3D buttons, focus halo behind the word, mono numerals). The reading engine logic lives in ~/flashr-extension/reader-core.js and is mirrored inline inside ~/flashr-mac/renderer/index.html.
 
@@ -23,7 +23,7 @@ Built and working in the Mac app:
 
 Permissions the app needs (dev build shows as "Electron" in the lists): Accessibility for the selection grab, Screen Recording for the region and continuous capture.
 
-Notion project page (Posthuman .projects): https://app.notion.com/p/37cc15359bb281fab243c380ef21dd26 (Flashr, In Progress, assigned Shawn). It does NOT yet list the most recent features (region read, continuous read, Vision OCR, stale-read fix, file drop).
+Notion project page (the workspace's .projects database, created pre-rebrand): https://app.notion.com/p/37cc15359bb281fab243c380ef21dd26 (Flashr, In Progress, assigned Shawn). It does NOT yet list the most recent features (region read, continuous read, Vision OCR, stale-read fix, file drop).
 
 NEXT STEPS:
 1. Test continuous mode (Ctrl+Alt+Cmd+G) and the fixes, then adjust.
