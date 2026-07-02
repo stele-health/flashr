@@ -37,7 +37,8 @@ IDENTITY="$IDENTITY" node "$HERE/sign-app.js" "$IDENTITY" "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
 # The bundled Vision helper is a loose Mach-O; it MUST carry the hardened runtime
 # or Apple's notary service rejects the whole app. Fail loudly if it slipped through.
-if codesign -dvv "$APP/Contents/Resources/app/bin/ocr" 2>&1 | grep -q "runtime"; then
+OCR_SIG="$(codesign -dvv "$APP/Contents/Resources/app/bin/ocr" 2>&1 || true)"
+if [[ "$OCR_SIG" == *"(runtime)"* ]]; then
   echo "   bin/ocr: hardened-runtime signed OK"
 else
   echo "ERROR: bin/ocr is not hardened-runtime signed; aborting before notarization." >&2
