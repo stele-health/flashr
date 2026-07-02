@@ -11,8 +11,8 @@ one script.
 
 Publishing account: **Aryan Pershad**. Signing and notarization run under your paid
 Apple team **2PKZ2GXQ6A** (the `Developer ID Application: ARYAN PERSHAD (2PKZ2GXQ6A)`
-cert, the same team as your Posthuman builds). Your `Apple Development` cert sits on a
-separate free team (`27H95G6Z62`); that one is dev-only and is not used here.
+cert). Your `Apple Development` cert sits on a separate free team (`27H95G6Z62`);
+that one is dev-only and is not used here.
 
 ---
 
@@ -90,9 +90,10 @@ Because the asset stays named `Flashr.dmg`, the flashr.bar download URL
 Open" first-launch note in `README.md` can be removed.
 
 ### Notes
-- **Bundle ID** is currently `health.posthuman.flashr` (legacy Posthuman domain).
-  If you want it under the Stele umbrella, decide before first release; changing it
-  after launch orphans update/identity continuity.
+- **Bundle ID** is `health.stele.flashr` (Stele namespace; all Stele micro-SaaS
+  apps use `health.stele.*`). Do not change it after launch: macOS keys the
+  Accessibility and Screen Recording grants to the bundle ID, so a change
+  silently breaks every existing user's permissions.
 - **This is your personal account** as a temporary launch vehicle. For a direct-download
   (non-App-Store) app there is no formal "App Transfer"; migrating to a Stele org
   account later just means re-signing future builds with that account's Developer ID.
