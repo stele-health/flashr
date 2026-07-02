@@ -10,24 +10,14 @@ window over any app.
 
 Requires macOS 12 (Monterey) or later on Apple Silicon (M1 or newer).
 
-### First launch
+### Install
 
-Flashr isn't notarized by Apple yet, so on the very first open macOS will block
-it. To open it the first time:
+Flashr is signed and notarized by Apple. Open the `.dmg`, drag **Flashr** into
+**Applications**, and launch it. No security warnings, no extra steps.
 
-1. Open the `.dmg` and drag **Flashr** into **Applications**.
-2. Double-click **Flashr** once (macOS will refuse — that's expected).
-3. Open **System Settings → Privacy & Security**, scroll down, and click
-   **Open Anyway** next to the Flashr message. Confirm with **Open**.
-
-You only need to do this once. After that it opens normally.
-
-If you'd rather do it in one step, run this in Terminal after copying Flashr to
-Applications:
-
-```
-xattr -dr com.apple.quarantine /Applications/Flashr.app
-```
+On first use, Flashr asks for two macOS permissions when you use the features
+that need them: **Accessibility** (to grab your current selection with the
+Flash hotkey) and **Screen Recording** (to read a screen region with OCR).
 
 ---
 
